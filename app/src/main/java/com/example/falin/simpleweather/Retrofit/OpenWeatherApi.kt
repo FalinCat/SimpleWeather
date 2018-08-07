@@ -1,0 +1,31 @@
+package com.example.igorvanteev.retrofit2test.Retrofit
+
+import com.example.falin.simpleweather.Model.CurrentWeatherDataResponse.CurrentWeatherData
+import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+
+interface OpenWeatherApi {
+    @GET("data/2.5/weather")
+    fun search(@Query("lat") lat: Double,
+               @Query("lon") lon: Double,
+               @Query("appid") appid: String,
+               @Query("lang") lang: String,
+               @Query("units") units: String
+               ): io.reactivex.Observable<CurrentWeatherData>
+
+    companion object Factory{
+        fun create(): OpenWeatherApi {
+            val retrofit = Retrofit.Builder()
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .baseUrl("http://api.openweathermap.org")
+                    .build()
+
+            return retrofit.create(OpenWeatherApi::class.java)
+        }
+    }
+}
