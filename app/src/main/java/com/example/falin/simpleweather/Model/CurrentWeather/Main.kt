@@ -1,4 +1,4 @@
-package com.example.falin.simpleweather.Model.CurrentWeatherDataResponse
+package com.example.falin.simpleweather.Model.CurrentWeather
 
 data class Main(
         val temp: Double,

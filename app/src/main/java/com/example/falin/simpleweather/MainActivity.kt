@@ -9,8 +9,13 @@ import android.os.Bundle
 import android.provider.Settings
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import android.widget.LinearLayout
+import com.example.falin.simpleweather.Adapters.ForecastAdapter
 import com.example.falin.simpleweather.Controller.LocationController
+import com.example.falin.simpleweather.Utility.DownLoadImageTask
+import com.example.falin.simpleweather.Utility.makeUrl
 import com.example.igorvanteev.retrofit2test.QueryRepositoryProvider
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -30,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
         val location = LocationController(this)
 
+        forecastRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.HORIZONTAL, false)
+
 
         //Init API
         val repo = QueryRepositoryProvider.provideQueryRepository()
@@ -37,44 +44,46 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(
                 repo.queryCurrentWeather(location.latitude, location.longitude)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .repeatWhen {
-                            repeatHandler  -> repeatHandler.flatMap { Observable.timer(60, TimeUnit.SECONDS) }
+                        .repeatWhen { repeatHandler ->
+                            repeatHandler.flatMap { Observable.timer(60, TimeUnit.SECONDS) }
                         }
                         .subscribeOn(Schedulers.io())
-                        .subscribe ({
-                            result ->
-                            Log.i(TAG, "Cod is ${result.cod}")
-                            Log.i(TAG, "Name is ${result.name}")
-                            Log.i(TAG, "Avg tmp is ${result.main.temp}")
+                        .subscribe({ result ->
                             currentTemperatureTxt.text = "${result.main.temp} °C"
-                            Log.i(TAG, "Max tmp is ${result.main.temp_max}")
+                            locationText.text = result.name
+                            DownLoadImageTask(currentWeatherImage).execute(makeUrl(result))
                         }, { error ->
-                            Log.i(TAG, "Error is ${error.message}")
+                            Log.i(TAG, "Error in current weather - ${error.message}")
+                        })
+        )
 
+        compositeDisposable.add(
+                repo.queryForecastWeather(location.latitude, location.longitude)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .repeatWhen { repeatHandler ->
+                            repeatHandler.flatMap { Observable.timer(60, TimeUnit.SECONDS) }
+                        }
+                        .subscribeOn(Schedulers.io())
+                        .doOnComplete { }
+                        .subscribe({ result ->
+                            if (forecastRecyclerView.adapter != null) {
+                                val adapter = ForecastAdapter(result)
+                                adapter.updateData(result)
+                            } else
+                                forecastRecyclerView.adapter = ForecastAdapter(result)
+                        }, { error ->
+                            Log.i(TAG, "Error in forecast - ${error.message}")
                         })
 
         )
 
 
-
-
-
-
-
-
-
     }
-
-
-
 
 
     override fun onStart() {
         super.onStart()
         checkLocation()
-    }
-    override fun onStop() {
-        super.onStop()
     }
 
     // Проверяем включен ли GPS или интернет
@@ -87,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                         val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                         startActivity(myIntent)
                     }
-                    .setNegativeButton("Cancel") { _, _ -> finish()}
+                    .setNegativeButton("Cancel") { _, _ -> finish() }
             dialog.show()
         }
 
@@ -100,8 +109,6 @@ class MainActivity : AppCompatActivity() {
 
         return isGpsEnabled || isNetworkEnabled
     }
-
-
 
 
 }
