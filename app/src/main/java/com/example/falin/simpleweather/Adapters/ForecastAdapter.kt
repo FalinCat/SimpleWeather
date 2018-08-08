@@ -24,10 +24,8 @@ class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.dayOfWeek?.text = fcwData?.list?.get(position)?.dt_txt
-        holder.temperature?.text = fcwData?.list?.get(position)?.main?.temp.toString()
+        holder.temperature?.text = fcwData?.list?.get(position)?.main?.temp.toString() + "°C"
         DownLoadImageTask(holder.imageWeather).execute(makeUrl(position, fcwData!!))
-//        holder.imageWeather?.text = fcwData?.list?.get(position)?.weather?.get(0)?.icon
-
     }
 
     fun updateData(fcw: ForecastWeatherData?) {

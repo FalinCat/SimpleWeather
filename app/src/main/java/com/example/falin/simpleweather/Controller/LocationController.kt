@@ -30,7 +30,8 @@ class LocationController(private val context: Context) {
                     ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return
             }
-            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
+//            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
+            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
         } catch (e: Exception) {
             Log.i(TAG, "Error in requestForUpdate\n${e.message}")
         }
@@ -38,13 +39,10 @@ class LocationController(private val context: Context) {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            Log.i(TAG, "onLocationChanged")
-            Log.i(TAG, "Longitude is " + location.longitude.toString())
-            Log.i(TAG, "Latitude is " +  location.latitude.toString())
 
+            // Внезапно тут переход на основную Activity
             val intent = Intent(context, MainActivity::class.java)
-            intent.putExtra("EXTRA", location)
-
+            intent.putExtra("LOCATION", location)
             startActivity(context, intent, null)
         }
 

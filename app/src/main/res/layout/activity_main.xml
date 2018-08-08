@@ -30,12 +30,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.75" />
+        app:layout_constraintGuide_percent="0.7" />
 
     <TextView
         android:id="@+id/currentTemperatureTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:text="32 C"
@@ -60,7 +61,6 @@
         android:id="@+id/currentWindSpeed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="36dp"
         android:layout_marginRight="36dp"
         android:text="currentWindSpeed"
@@ -78,8 +78,8 @@
 
     <ImageView
         android:id="@+id/currentWeatherImage"
-        android:layout_width="171dp"
-        android:layout_height="161dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toTopOf="@+id/currentTemperatureTxt"
