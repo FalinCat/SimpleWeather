@@ -2,18 +2,13 @@
 
 package com.example.falin.simpleweather
 
-import android.content.Context
-import android.content.Intent
-import android.location.LocationManager
+import android.location.Location
 import android.os.Bundle
-import android.provider.Settings
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.widget.LinearLayout
 import com.example.falin.simpleweather.Adapters.ForecastAdapter
-import com.example.falin.simpleweather.Controller.LocationController
 import com.example.falin.simpleweather.Utility.DownLoadImageTask
 import com.example.falin.simpleweather.Utility.makeUrl
 import com.example.igorvanteev.retrofit2test.QueryRepositoryProvider
@@ -33,10 +28,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val location = LocationController(this)
+
 
         forecastRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.HORIZONTAL, false)
 
+        val location = intent.getParcelableExtra<Location>("EXTRA")
 
         //Init API
         val repo = QueryRepositoryProvider.provideQueryRepository()
@@ -79,36 +75,4 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
-
-    override fun onStart() {
-        super.onStart()
-        checkLocation()
-    }
-
-    // Проверяем включен ли GPS или интернет
-    private fun checkLocation(): Boolean {
-        if (!isLocationEnabled()) {
-            val dialog = AlertDialog.Builder(this)
-            dialog.setTitle("Enable Location")
-                    .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to use this app")
-                    .setPositiveButton("Location Settings") { _, _ ->
-                        val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                        startActivity(myIntent)
-                    }
-                    .setNegativeButton("Cancel") { _, _ -> finish() }
-            dialog.show()
-        }
-
-        return isLocationEnabled()
-    }
-
-    private fun isLocationEnabled(): Boolean {
-        val isGpsEnabled = (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
-        val isNetworkEnabled = (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
-        return isGpsEnabled || isNetworkEnabled
-    }
-
-
 }

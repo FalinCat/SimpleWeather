@@ -2,13 +2,16 @@ package com.example.falin.simpleweather.Controller
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
+import com.example.falin.simpleweather.MainActivity
 
 class LocationController(private val context: Context) {
     private val TAG = "APPTAG"
@@ -27,7 +30,7 @@ class LocationController(private val context: Context) {
                     ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return
             }
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
         } catch (e: Exception) {
             Log.i(TAG, "Error in requestForUpdate\n${e.message}")
         }
@@ -39,8 +42,10 @@ class LocationController(private val context: Context) {
             Log.i(TAG, "Longitude is " + location.longitude.toString())
             Log.i(TAG, "Latitude is " +  location.latitude.toString())
 
-            longitude =location.longitude
-            latitude =location.latitude
+            val intent = Intent(context, MainActivity::class.java)
+            intent.putExtra("EXTRA", location)
+
+            startActivity(context, intent, null)
         }
 
         override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {}
