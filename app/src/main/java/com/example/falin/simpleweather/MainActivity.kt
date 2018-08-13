@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun addSubscription() {
-        Toast.makeText(this, "add subs", Toast.LENGTH_SHORT).show()
         compositeDisposable.add(
                 repo.queryCurrentWeather(location.latitude, location.longitude)
                         .repeatWhen { repeatHandler ->
@@ -140,28 +139,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-//    // Проверяем включен ли GPS или интернет
-//    private fun checkLocation(): Boolean {
-//        if (!isLocationEnabled()) {
-//            val dialog = AlertDialog.Builder(this)
-//            dialog.setTitle("Enable Location")
-//                    .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to use this app")
-//                    .setPositiveButton("Location Settings") { _, _ ->
-//                        val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-//                        startActivity(myIntent)
-//                    }
-//                    .setNegativeButton("Cancel") { _, _ -> finish() }
-//            dialog.show()
-//        }
-//
-//        return isLocationEnabled()
-//    }
-//
-//    private fun isLocationEnabled(): Boolean {
-//        val isGpsEnabled = (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
-//        val isNetworkEnabled = (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-//
-//        return isGpsEnabled || isNetworkEnabled
+
 //    }
 
 
