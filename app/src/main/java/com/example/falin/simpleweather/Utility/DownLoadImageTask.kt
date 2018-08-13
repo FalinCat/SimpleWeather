@@ -3,6 +3,7 @@ package com.example.falin.simpleweather.Utility
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.AsyncTask
+import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import com.example.falin.simpleweather.Model.CurrentWeather.CurrentWeatherData
@@ -15,7 +16,7 @@ class DownLoadImageTask(internal val imageView: ImageView) : AsyncTask<String, V
         return try {
             val inputStream = URL(urlOfImage).openStream()
             BitmapFactory.decodeStream(inputStream)
-        } catch (e: Exception) { // Catch the download exception
+        } catch (e: Exception) {
             e.printStackTrace()
             null
         }
@@ -23,8 +24,6 @@ class DownLoadImageTask(internal val imageView: ImageView) : AsyncTask<String, V
 
     override fun onPostExecute(result: Bitmap?) {
         if (result != null) {
-            // Display the downloaded image into image view
-
             imageView.setImageBitmap(result)
         } else {
             Toast.makeText(imageView.context, "Error downloading", Toast.LENGTH_SHORT).show()
@@ -36,12 +35,18 @@ class DownLoadImageTask(internal val imageView: ImageView) : AsyncTask<String, V
 
 fun makeUrl(position: Int, fcwData: ForecastWeatherData): String {
     val imageName = fcwData.list[position].weather[0].icon
+    Log.d("APPTAG", "Forecast icon " + fcwData.list[position].weather[0].icon + "\nPosition $position")
 
     return "http://openweathermap.org/img/w/$imageName.png"
 }
 
 fun makeUrl(curw: CurrentWeatherData): String {
     val imageName = curw.weather[0].icon
+    Log.d("APPTAG", "Current icon " + curw.weather[0].icon)
 
     return "http://openweathermap.org/img/w/$imageName.png"
+}
+
+fun makeUrl(icon: String): String {
+    return "http://openweathermap.org/img/w/$icon.png"
 }

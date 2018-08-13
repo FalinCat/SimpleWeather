@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
 import com.example.falin.simpleweather.R
-import com.example.falin.simpleweather.Utility.DownLoadImageTask
-import com.example.falin.simpleweather.Utility.makeUrl
 import kotlinx.android.synthetic.main.forecast_one_day_cardiew_layout.view.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
@@ -18,14 +18,23 @@ class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<
 
     }
 
-    override fun getItemCount(): Int {
-        return fcwData?.list?.size ?: 0
-    }
+    override fun getItemCount(): Int = fcwData?.list?.size ?: 0
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.dayOfWeek?.text = fcwData?.list?.get(position)?.dt_txt
-        holder.temperature?.text = fcwData?.list?.get(position)?.main?.temp.toString() + "°C"
-        DownLoadImageTask(holder.imageWeather).execute(makeUrl(position, fcwData!!))
+        val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
+        val netDate = Date(fcwData!!.list[position].dt.toLong() * 1000)
+
+        val temperature = "${String.format("%.1f", fcwData!!.list[position].main.temp).replace(",", ".")} °C"
+        val wind = "${String.format("%.1f", fcwData!!.list[position].wind.speed).replace(",", ".")} m/s"
+        val pressure = "${String.format("%.1f", fcwData!!.list[position].main.pressure).replace(",", ".")} hPa"
+
+        holder.dayOfWeek?.text = sdf.format(netDate)
+        holder.temperature?.text = temperature
+        holder.wind?.text = wind
+        holder.pressure?.text = pressure
+
+
+//        DownLoadImageTask(holder.imageWeather).execute(makeUrl(position, fcwData!!))
     }
 
     fun updateData(fcw: ForecastWeatherData?) {
@@ -35,8 +44,9 @@ class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val dayOfWeek = itemView.dayOfWeek
-        val imageWeather = itemView.imageWeather
         val temperature = itemView.temperature
+        val wind = itemView.wind
+        val pressure = itemView.pressure
     }
 }
 
