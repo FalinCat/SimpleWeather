@@ -189,7 +189,7 @@ class StartActivity : AppCompatActivity() {
             Log.d(TAG, "request location")
 
             locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
-//            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
 
 
         } catch (e: Exception) {
