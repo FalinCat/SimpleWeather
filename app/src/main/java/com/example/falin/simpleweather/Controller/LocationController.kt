@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat.startActivity
@@ -17,10 +18,6 @@ class LocationController(private val context: Context) {
     private val TAG = "APPTAG"
 
     private lateinit var locationManager: LocationManager
-    // Public
-    var longitude: Double = 0.0
-    var latitude: Double = 0.0
-
 
     private fun requestForUpdate(){
         locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -28,10 +25,23 @@ class LocationController(private val context: Context) {
         try {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "Not permitted")
+
                 return
             }
-            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
-//            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
+
+            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as
+                    WifiManager
+
+            Log.i(TAG, "request location")
+            if (wifiManager.isWifiEnabled) {
+                Log.i(TAG, "request location from GPS")
+                locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
+            } else {
+                Log.i(TAG, "request location from network")
+                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
+            }
+
         } catch (e: Exception) {
             Log.e(TAG, "Error in requestForUpdate\n${e.message}")
         }
@@ -39,6 +49,7 @@ class LocationController(private val context: Context) {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
+            Log.d(TAG, "onLocationChanged()")
 
             // Внезапно тут переход на основную Activity
             val intent = Intent(context, MainActivity::class.java)

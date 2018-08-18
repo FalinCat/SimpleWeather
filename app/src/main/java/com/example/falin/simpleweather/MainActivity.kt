@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
                 repo.queryForecastWeather(location.latitude, location.longitude)
 
                         .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(60, TimeUnit.SECONDS) }
+                            repeatHandler.flatMap { Observable.timer(1800, TimeUnit.SECONDS) }
                         }
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -138,9 +138,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
-
-//    }
 
 
 }
