@@ -3,6 +3,7 @@ package com.example.falin.simpleweather
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -22,11 +23,17 @@ class StartActivity : AppCompatActivity() {
     private val RECORD_REQUEST_CODE = 23
     private val TAG = "APPTAG"
     private lateinit var locationManager: LocationManager
-    private var isAvtivityCurrent = true
+    private var APP_PREFERENCE = "appPrefs"
+    private lateinit var prefs: SharedPreferences
+    private val eventHandler: Handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
+
+        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
 
         checkGpsStatus()
 
@@ -40,20 +47,56 @@ class StartActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        Handler().postDelayed({
-            if (isAvtivityCurrent) {
-                startIfWeCan()
-            }
+        if (prefs.getString("LOCATION", "") != "") {
+
+            val stringLocations = prefs.getString("LOCATION", "").split(" ")
+            Log.i(TAG, "Found saved location ${stringLocations[0]} & ${stringLocations[1]}")
+            val location = Location("")
+
+            location.latitude = stringLocations[0].toDouble()
+            location.longitude = stringLocations[1].toDouble()
+
+
+            val locationIntent = Intent(this, MainActivity::class.java)
+            locationIntent.putExtra("LOCATION", location)
+            locationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            locationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            locationIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+
+            locationManager.removeUpdates(locationListener)
+
+
+            eventHandler.removeCallbacksAndMessages(null)
+            ContextCompat.startActivity(this@StartActivity, locationIntent, null)
+
+            return
+        }
+
+        eventHandler.postDelayed({
+            startIfWeCan()
         }, 2 * 1000)
 
+        eventHandler.postDelayed({
+
+            val mapIntent = Intent(this, MapsActivity::class.java)
+            mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            mapIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+
+            locationManager.removeUpdates(locationListener)
+
+
+            ContextCompat.startActivity(this@StartActivity, mapIntent, null)
+
+        }, 10 * 1000)
     }
+
 
     private fun startIfWeCan(): Boolean {
 
         if (isLocationEnabled() && isPermissionOwned() && isOnline()) {
             Log.d(TAG, "All done")
             locationUpdate()
-            isAvtivityCurrent = false
             return true
         } else {
             Log.d(TAG, "not all done...")
@@ -176,7 +219,7 @@ class StartActivity : AppCompatActivity() {
     }
 
     private fun locationUpdate() {
-        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         try {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -206,6 +249,10 @@ class StartActivity : AppCompatActivity() {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+
+            locationManager.removeUpdates(this)
+
+            eventHandler.removeCallbacksAndMessages(null)
             ContextCompat.startActivity(this@StartActivity, intent, null)
         }
 

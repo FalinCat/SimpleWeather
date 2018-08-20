@@ -2,6 +2,8 @@
 
 package com.example.falin.simpleweather
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
@@ -31,15 +33,24 @@ class MainActivity : AppCompatActivity() {
     private var exit: Boolean? = false
     private lateinit var location: Location
     private val repo = QueryRepositoryProvider.provideQueryRepository()
-
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
+    private var APP_PREFERENCE = "appPrefs"
+    private lateinit var prefs: SharedPreferences
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
         forecastRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
         location = intent.getParcelableExtra("LOCATION")
+
+
+        locationText.setOnClickListener {
+            prefs.edit().clear().apply()
+            Toast.makeText(this, "Reseting your saved location...", Toast.LENGTH_SHORT).show()
+        }
     }
 
 
