@@ -47,8 +47,9 @@ class StartActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (prefs.getString("LOCATION", "") != "") {
+        checkGpsStatus()
 
+        if (prefs.getString("LOCATION", "") != "") {
             val stringLocations = prefs.getString("LOCATION", "").split(" ")
             Log.i(TAG, "Found saved location ${stringLocations[0]} & ${stringLocations[1]}")
             val location = Location("")
@@ -78,16 +79,16 @@ class StartActivity : AppCompatActivity() {
 
         eventHandler.postDelayed({
 
-            val mapIntent = Intent(this, MapsActivity::class.java)
-            mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            mapIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            if (isLocationEnabled()) {
+                val mapIntent = Intent(this, MapsActivity::class.java)
+                mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                mapIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
 
-            locationManager.removeUpdates(locationListener)
+                locationManager.removeUpdates(locationListener)
 
-
-            ContextCompat.startActivity(this@StartActivity, mapIntent, null)
-
+                ContextCompat.startActivity(this@StartActivity, mapIntent, null)
+            }
         }, 10 * 1000)
     }
 
