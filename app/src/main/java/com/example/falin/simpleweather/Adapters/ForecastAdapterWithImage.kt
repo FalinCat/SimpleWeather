@@ -6,16 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
 import com.example.falin.simpleweather.R
-import kotlinx.android.synthetic.main.forecast_one_day_cardiew_layout.view.*
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.forecast_layout.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
+class ForecastAdapterWithImage(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<ForecastAdapterWithImage.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.forecast_one_day_cardiew_layout, parent, false)
-        return ViewHolder(v)
-
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.forecast_layout, parent, false)
+        return ViewHolder(view)
     }
 
     override fun getItemCount(): Int = fcwData?.list?.size ?: 0
@@ -28,18 +27,14 @@ class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<
         val wind = "${String.format("%.1f", fcwData!!.list[position].wind.speed).replace(",", ".")} m/s"
         val pressure = "${String.format("%.1f", fcwData!!.list[position].main.pressure).replace(",", ".")} hPa"
 
-        holder.dayOfWeek?.text = sdf.format(netDate)
-        holder.temperature?.text = temperature
-        holder.wind?.text = wind
-        holder.pressure?.text = pressure
+        val imageUrl = "http://openweathermap.org/img/w/${fcwData!!.list[position].weather[0].icon}.png"
 
+        Picasso.get().load(imageUrl).into(holder.weatherImage)
 
-//        DownLoadImageTask(holder.imageWeather).execute(makeUrl(position, fcwData!!))
-    }
-
-    fun updateData(fcw: ForecastWeatherData?) {
-        fcwData = fcw
-        notifyDataSetChanged()
+        holder.dayOfWeek.text = sdf.format(netDate)
+        holder.temperature.text = temperature
+        holder.wind.text = wind
+        holder.pressure.text = pressure
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -47,6 +42,13 @@ class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<
         val temperature = itemView.temperatureFC
         val wind = itemView.windFC
         val pressure = itemView.pressureFC
+
+        val weatherImage = itemView.weatherImageFC
+
+    }
+
+    fun updateData(fcw: ForecastWeatherData?) {
+        fcwData = fcw
+        notifyDataSetChanged()
     }
 }
-

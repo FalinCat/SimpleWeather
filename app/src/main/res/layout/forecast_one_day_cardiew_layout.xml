@@ -15,7 +15,7 @@
         android:background="@color/colorPrimaryLight">
 
         <TextView
-            android:id="@+id/dayOfWeek"
+            android:id="@+id/dayOfWeekFC"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -30,7 +30,7 @@
             tools:text="Date" />
 
         <TextView
-            android:id="@+id/temperature"
+            android:id="@+id/temperatureFC"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -46,7 +46,7 @@
             tools:text="Temp" />
 
         <TextView
-            android:id="@+id/wind"
+            android:id="@+id/windFC"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="32dp"
@@ -55,14 +55,14 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:textColor="@color/colorPrimaryText"
-            app:layout_constraintEnd_toStartOf="@+id/temperature"
+            app:layout_constraintEnd_toStartOf="@+id/temperatureFC"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/dayOfWeek"
+            app:layout_constraintStart_toEndOf="@+id/dayOfWeekFC"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Wind" />
 
         <TextView
-            android:id="@+id/pressure"
+            android:id="@+id/pressureFC"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -73,10 +73,10 @@
             android:layout_marginTop="8dp"
             android:textColor="@color/colorPrimaryText"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/temperature"
+            app:layout_constraintEnd_toStartOf="@+id/temperatureFC"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/dayOfWeek"
-            app:layout_constraintTop_toBottomOf="@+id/wind"
+            app:layout_constraintStart_toEndOf="@+id/dayOfWeekFC"
+            app:layout_constraintTop_toBottomOf="@+id/windFC"
             app:layout_constraintVertical_bias="0.0"
             tools:text="Pressure" />
 

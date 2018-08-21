@@ -12,7 +12,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.widget.LinearLayout
 import android.widget.Toast
-import com.example.falin.simpleweather.Adapters.ForecastAdapter
+import com.example.falin.simpleweather.Adapters.ForecastAdapterWithImage
 import com.example.falin.simpleweather.Model.CurrentWeather.CurrentWeatherData
 import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
 import com.example.falin.simpleweather.Utility.DownLoadImageTask
@@ -111,11 +111,11 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI(fWeather: ForecastWeatherData) {
         try {
             if (forecastRecyclerView.adapter != null) {
-                val adapter = ForecastAdapter(fWeather)
+                val adapter = ForecastAdapterWithImage(fWeather)
                 adapter.updateData(fWeather)
             } else {
+                forecastRecyclerView.adapter = ForecastAdapterWithImage(fWeather)
             }
-            forecastRecyclerView.adapter = ForecastAdapter(fWeather)
         } catch (e: Exception) {
             Log.i(TAG, e.message)
         }
