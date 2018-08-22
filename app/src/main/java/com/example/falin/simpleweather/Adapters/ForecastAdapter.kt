@@ -22,11 +22,11 @@ class ForecastAdapter(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
-        val netDate = Date(fcwData!!.list[position].dt.toLong() * 1000)
+        val netDate = Date(fcwData!!.list?.get(position)?.dt!!.toLong() * 1000)
 
-        val temperature = "${String.format("%.1f", fcwData!!.list[position].main.temp).replace(",", ".")} °C"
-        val wind = "${String.format("%.1f", fcwData!!.list[position].wind.speed).replace(",", ".")} m/s"
-        val pressure = "${String.format("%.1f", fcwData!!.list[position].main.pressure).replace(",", ".")} hPa"
+        val temperature = "${String.format("%.1f", fcwData!!.list?.get(position)?.main?.temp).replace(",", ".")} °C"
+        val wind = "${String.format("%.1f", fcwData!!.list?.get(position)?.wind?.speed).replace(",", ".")} m/s"
+        val pressure = "${String.format("%.1f", fcwData!!.list?.get(position)?.main?.pressure).replace(",", ".")} hPa"
 
         holder.dayOfWeek?.text = sdf.format(netDate)
         holder.temperature?.text = temperature

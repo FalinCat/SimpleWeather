@@ -69,4 +69,5 @@
         app:layout_constraintBottom_toBottomOf="@+id/weatherImageFC"
         app:layout_constraintEnd_toStartOf="@+id/weatherImageFC"
         tools:text="Pressure" />
+
 </android.support.constraint.ConstraintLayout>

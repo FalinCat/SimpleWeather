@@ -1,9 +1,13 @@
 package com.example.falin.simpleweather.Adapters
 
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import com.example.falin.simpleweather.DetailForecastActivity
 import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
 import com.example.falin.simpleweather.R
 import com.squareup.picasso.Picasso
@@ -14,20 +18,29 @@ import java.util.*
 class ForecastAdapterWithImage(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<ForecastAdapterWithImage.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.forecast_layout, parent, false)
-        return ViewHolder(view)
+
+
+        return ViewHolder(view).listen { pos, type ->
+            val intent = Intent(parent.context, DetailForecastActivity::class.java)
+            intent.putExtra("fcw", fcwData)
+            intent.putExtra("position", pos)
+
+            parent.context.startActivity(intent)
+        }
     }
+
 
     override fun getItemCount(): Int = fcwData?.list?.size ?: 0
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
-        val netDate = Date(fcwData!!.list[position].dt.toLong() * 1000)
+        val netDate = Date(fcwData!!.list!![position].dt!!.toLong() * 1000)
 
-        val temperature = "${String.format("%.1f", fcwData!!.list[position].main.temp).replace(",", ".")} °C"
-        val wind = "${String.format("%.1f", fcwData!!.list[position].wind.speed).replace(",", ".")} m/s"
-        val pressure = "${String.format("%.1f", fcwData!!.list[position].main.pressure).replace(",", ".")} hPa"
+        val temperature = "${String.format("%.1f", fcwData!!.list!![position].main?.temp).replace(",", ".")} °C"
+        val wind = "${String.format("%.1f", fcwData!!.list!![position].wind?.speed).replace(",", ".")} m/s"
+        val pressure = "${String.format("%.1f", fcwData!!.list!![position].main?.pressure).replace(",", ".")} hPa"
 
-        val imageUrl = "http://openweathermap.org/img/w/${fcwData!!.list[position].weather[0].icon}.png"
+        val imageUrl = "http://openweathermap.org/img/w/${fcwData!!.list!![position].weather!![0].icon}.png"
 
         Picasso.get().load(imageUrl).into(holder.weatherImage)
 
@@ -38,13 +51,19 @@ class ForecastAdapterWithImage(var fcwData: ForecastWeatherData?) : RecyclerView
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val dayOfWeek = itemView.dayOfWeekFC
-        val temperature = itemView.temperatureFC
-        val wind = itemView.windFC
-        val pressure = itemView.pressureFC
+        val dayOfWeek: TextView = itemView.dayOfWeekFC
+        val temperature: TextView = itemView.temperatureFC
+        val wind: TextView = itemView.windFC
+        val pressure: TextView = itemView.pressureFC
 
-        val weatherImage = itemView.weatherImageFC
+        val weatherImage: ImageView = itemView.weatherImageFC
+    }
 
+    fun <T : RecyclerView.ViewHolder> T.listen(event: (position: Int, type: Int) -> Unit): T {
+        itemView.setOnClickListener {
+            event.invoke(adapterPosition, itemViewType)
+        }
+        return this
     }
 
     fun updateData(fcw: ForecastWeatherData?) {

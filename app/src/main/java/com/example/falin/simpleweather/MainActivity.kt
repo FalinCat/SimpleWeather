@@ -15,9 +15,8 @@ import android.widget.Toast
 import com.example.falin.simpleweather.Adapters.ForecastAdapterWithImage
 import com.example.falin.simpleweather.Model.CurrentWeather.CurrentWeatherData
 import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
-import com.example.falin.simpleweather.Utility.DownLoadImageTask
-import com.example.falin.simpleweather.Utility.makeUrl
 import com.example.igorvanteev.retrofit2test.QueryRepositoryProvider
+import com.squareup.picasso.Picasso
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(
                 repo.queryCurrentWeather(location.latitude, location.longitude)
                         .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(60, TimeUnit.SECONDS) }
+                            repeatHandler.flatMap { Observable.timer(1, TimeUnit.HOURS) }
                         }
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -76,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                 repo.queryForecastWeather(location.latitude, location.longitude)
 
                         .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(1800, TimeUnit.SECONDS) }
+                            repeatHandler.flatMap { Observable.timer(6, TimeUnit.HOURS) }
                         }
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -103,9 +102,13 @@ class MainActivity : AppCompatActivity() {
         val lastUpdt = "Last update: ${format.format(Date())}"
         lastUpdate.text = lastUpdt
 
-        DownLoadImageTask(currentWeatherImage).execute(makeUrl(cWeather.weather[0].icon))
+        Picasso.get().load(makeUrl(cWeather.weather[0].icon)).into(currentWeatherImage)
 
         Log.d(TAG, "UI updating...")
+    }
+
+    private fun makeUrl(icon: String): String {
+        return "http://openweathermap.org/img/w/$icon.png"
     }
 
     private fun updateUI(fWeather: ForecastWeatherData) {

@@ -49,6 +49,7 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
+        <activity android:name=".DetailForecastActivity"></activity>
     </application>
 
 </manifest>

@@ -79,7 +79,7 @@ class StartActivity : AppCompatActivity() {
 
         eventHandler.postDelayed({
 
-            if (isLocationEnabled()) {
+            if (isLocationEnabled() && this@StartActivity.window.decorView.isShown) {
                 val mapIntent = Intent(this, MapsActivity::class.java)
                 mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
