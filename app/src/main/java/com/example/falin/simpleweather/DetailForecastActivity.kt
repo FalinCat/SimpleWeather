@@ -2,7 +2,7 @@ package com.example.falin.simpleweather
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
+import com.example.falin.simpleweather.model.ForecastWeather.ForecastWeatherData
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_detail_forecast.*
 import java.text.SimpleDateFormat

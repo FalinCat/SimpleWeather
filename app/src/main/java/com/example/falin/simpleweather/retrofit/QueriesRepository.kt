@@ -1,7 +1,7 @@
 package com.example.igorvanteev.retrofit2test
 
-import com.example.falin.simpleweather.Model.CurrentWeather.CurrentWeatherData
-import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
+import com.example.falin.simpleweather.model.CurrentWeather.CurrentWeatherData
+import com.example.falin.simpleweather.model.ForecastWeather.ForecastWeatherData
 import com.example.igorvanteev.retrofit2test.Retrofit.OpenWeatherApi
 import io.reactivex.Observable
 

@@ -1,4 +1,4 @@
-package com.example.falin.simpleweather.Controller
+package com.example.falin.simpleweather.controller
 
 import android.Manifest
 import android.content.Context

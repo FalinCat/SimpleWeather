@@ -1,7 +1,7 @@
 package com.example.igorvanteev.retrofit2test.Retrofit
 
-import com.example.falin.simpleweather.Model.CurrentWeather.CurrentWeatherData
-import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
+import com.example.falin.simpleweather.model.CurrentWeather.CurrentWeatherData
+import com.example.falin.simpleweather.model.ForecastWeather.ForecastWeatherData
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory

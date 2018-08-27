@@ -1,4 +1,4 @@
-package com.example.falin.simpleweather.Adapters
+package com.example.falin.simpleweather.adapters
 
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
@@ -8,17 +8,16 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.falin.simpleweather.DetailForecastActivity
-import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
 import com.example.falin.simpleweather.R
+import com.example.falin.simpleweather.model.ForecastWeather.ForecastWeatherData
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.forecast_layout.view.*
+import kotlinx.android.synthetic.main.recycler_body.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ForecastAdapterWithImage(var fcwData: ForecastWeatherData?) : RecyclerView.Adapter<ForecastAdapterWithImage.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.forecast_layout, parent, false)
-
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_body, parent, false)
 
         return ViewHolder(view).listen { pos, type ->
             val intent = Intent(parent.context, DetailForecastActivity::class.java)
@@ -28,7 +27,6 @@ class ForecastAdapterWithImage(var fcwData: ForecastWeatherData?) : RecyclerView
             parent.context.startActivity(intent)
         }
     }
-
 
     override fun getItemCount(): Int = fcwData?.list?.size ?: 0
 

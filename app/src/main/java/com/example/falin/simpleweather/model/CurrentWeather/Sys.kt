@@ -1,4 +1,4 @@
-package com.example.falin.simpleweather.Model.CurrentWeather
+package com.example.falin.simpleweather.model.CurrentWeather
 
 data class Sys(
         val message: Double,

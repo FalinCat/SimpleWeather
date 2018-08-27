@@ -13,125 +13,140 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 
+const val LOG_TAG = "APPTAG"
 
 class StartActivity : AppCompatActivity() {
+    private var locationManager: LocationManager? = null
+    private var userLocation: Location? = null
+    private val eventHandler: Handler = Handler()
     private val RECORD_REQUEST_CODE = 23
     private val TAG = "APPTAG"
-    private lateinit var locationManager: LocationManager
     private var APP_PREFERENCE = "appPrefs"
     private lateinit var prefs: SharedPreferences
-    private val eventHandler: Handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
 
-        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
         prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
-
-        checkGpsStatus()
-
-        checkPerm()
-
-        checkDeviceOnline()
-
 
     }
 
     override fun onStart() {
         super.onStart()
 
-        checkGpsStatus()
-
         if (prefs.getString("LOCATION", "") != "") {
             val stringLocations = prefs.getString("LOCATION", "").split(" ")
-            Log.i(TAG, "Found saved location ${stringLocations[0]} & ${stringLocations[1]}")
-            val location = Location("")
+            Log.i(TAG, "Найдены сохраненные координаты ${stringLocations[0]} & ${stringLocations[1]}")
+            userLocation = Location("")
+            userLocation?.latitude = stringLocations[0].toDouble()
+            userLocation?.longitude = stringLocations[1].toDouble()
 
-            location.latitude = stringLocations[0].toDouble()
-            location.longitude = stringLocations[1].toDouble()
+            eventHandler.postDelayed({
+                eventHandler.removeCallbacksAndMessages(null)
+                startMainActivity()
+            }, 2 * 1000)
 
+        } else {
+            // Проверка разрешений
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.e(LOG_TAG, "Нет разрешений. Запрашиваем")
 
-            val locationIntent = Intent(this, MainActivity::class.java)
-            locationIntent.putExtra("LOCATION", location)
-            locationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            locationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            locationIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION), RECORD_REQUEST_CODE)
 
-            locationManager.removeUpdates(locationListener)
-
-
-            eventHandler.removeCallbacksAndMessages(null)
-            ContextCompat.startActivity(this@StartActivity, locationIntent, null)
-
-            return
-        }
-
-        eventHandler.postDelayed({
-            startIfWeCan()
-        }, 2 * 1000)
-
-        eventHandler.postDelayed({
-
-            if (isLocationEnabled() && this@StartActivity.window.decorView.isShown) {
-                val mapIntent = Intent(this, MapsActivity::class.java)
-                mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                mapIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-
-                locationManager.removeUpdates(locationListener)
-
-                ContextCompat.startActivity(this@StartActivity, mapIntent, null)
+                return
             }
-        }, 10 * 1000)
+
+            //Проверяем включено ли местоположение
+            if (!isLocationEnabled()) {
+                val dialog = AlertDialog.Builder(this)
+                dialog.setTitle("Использовать местоположение")
+                        .setMessage("Включить геолокацию")
+                        .setPositiveButton("Настройки местоположения") { _, _ ->
+                            val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                            startActivity(myIntent)
+                        }
+                        .setNegativeButton("Нет") { _, _ -> startMapsActivity() }
+                dialog.show()
+            }
+
+            // Проверяем включен ли интернет
+            if (!checkDeviceOnline()) {
+                Log.d(TAG, "На устройстве выключен интернет")
+
+                val dialog = AlertDialog.Builder(this@StartActivity)
+                        .setTitle("Доступ к сети")
+                        .setMessage("Приложению требуется доступ к интернету\nВключить интернет?")
+                        .setPositiveButton("Да") { _, _ ->
+                            val i = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                            startActivity(i)
+                        }
+                        .setNegativeButton("Нет") { _, _ ->
+                            finish()
+                        }
+                        .create()
+                dialog.show()
+            }
+
+            // Единичный запрос координат
+            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+            locationManager?.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
+            locationManager?.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
+
+            eventHandler.postDelayed({
+                if (userLocation != null) {
+                    eventHandler.removeCallbacksAndMessages(null)
+                    locationManager?.removeUpdates(locationListener)
+                    startMainActivity()
+                } else {
+                    Log.d(LOG_TAG, "Координаты не определены спустя 2 секунды")
+                }
+
+            }, 2 * 1000)
+
+            eventHandler.postDelayed({
+                if (userLocation != null) {
+                    eventHandler.removeCallbacksAndMessages(null)
+                    locationManager?.removeUpdates(locationListener)
+                    startMainActivity()
+                } else {
+                    Log.d(LOG_TAG, "Координаты не определены. Переход к карте")
+                    startMapsActivity()
+                }
+            }, 10 * 1000)
+        }
     }
 
+    private fun startMapsActivity() {
+        val intent = Intent(this, MapsActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(intent)
+    }
 
-    private fun startIfWeCan(): Boolean {
+    private fun startMainActivity() {
+        Log.d(LOG_TAG, "Координаты для поиска погоды ${userLocation?.latitude} && ${userLocation?.longitude}")
 
-        if (isLocationEnabled() && isPermissionOwned() && isOnline()) {
-            Log.d(TAG, "All done")
-            locationUpdate()
-            return true
-        } else {
-            Log.d(TAG, "not all done...")
-            Log.d(TAG, "isLocationEnabled() - ${isLocationEnabled()} && " +
-                    "isPermissionOwned() - ${isPermissionOwned()} &&" +
-                    " isOnline() - ${isOnline()} ")
-            return false
+        //Записываем местоположение в настройки
+        if (prefs.getString("LOCATION", "") == "") {
+            prefs.edit()
+                    .putString("LOCATION", "${userLocation?.latitude} ${userLocation?.longitude}")
+                    .apply()
         }
 
-
-    }
-
-
-    // PERMISSION
-    private fun checkPerm(): Boolean {
-        Log.d(TAG, "checkPerm()")
-        if (isPermissionOwned()) {
-            return true
-        } else {
-            Log.d(TAG, "request permission")
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION), RECORD_REQUEST_CODE)
-        }
-
-        return true
-    }
-
-    private fun isPermissionOwned(): Boolean {
-        return ActivityCompat.checkSelfPermission(this@StartActivity,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this@StartActivity,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
-
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("LOCATION", userLocation)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(intent)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -142,22 +157,22 @@ class StartActivity : AppCompatActivity() {
 
                     // Повторно спрашиваем разрешения
                     val dialog = AlertDialog.Builder(this@StartActivity)
-                            .setTitle("No permission - no weather")
-                            .setMessage("We can not determine your weather without knowing where you are.\n" +
-                                    "Would you let the application determine your location?")
-                            .setPositiveButton("YES") { dialog, which ->
+                            .setTitle("Разрешение определения местоположения")
+                            .setMessage("Определить местоположение автоматически?")
+                            .setPositiveButton("Да") { _, _ ->
                                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
                                         Manifest.permission.ACCESS_COARSE_LOCATION), RECORD_REQUEST_CODE)
                             }
-                            .setNegativeButton("No") { dialog, which ->
-                                finish()
+                            .setNegativeButton("Нет") { _, _ ->
+                                startMapsActivity()
                             }
                             .create()
 
                     dialog.show()
 
                 } else {
-                    Handler().postDelayed({ startIfWeCan() }, 1 * 1000)
+                    Log.d(LOG_TAG, "Разрешение получено")
+                    recreate()
                 }
             }
         }
@@ -165,52 +180,30 @@ class StartActivity : AppCompatActivity() {
 
     // NETWORK
     private fun checkDeviceOnline(): Boolean {
-        if (!isOnline()) {
-            Log.d(TAG, "Device is offline")
+        val connMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connMgr.activeNetworkInfo
+
+        val isOnline = networkInfo != null && networkInfo.isConnected
+        if (!isOnline) {
+            Log.d(TAG, "На устройстве выключен интернет")
 
             val dialog = AlertDialog.Builder(this@StartActivity)
-                    .setTitle("Application need internet")
-                    .setMessage("Turn on internet please")
-                    .setPositiveButton("YES") { dialog, which ->
+                    .setTitle("Доступ к сети")
+                    .setMessage("Приложению требуется доступ к интернету\nВключить интернет?")
+                    .setPositiveButton("Да") { dialog, which ->
                         val i = Intent(Settings.ACTION_WIRELESS_SETTINGS)
                         startActivity(i)
                     }
-                    .setNegativeButton("No") { dialog, which ->
+                    .setNegativeButton("Нет") { dialog, which ->
                         finish()
                     }
                     .create()
             dialog.show()
         }
-        return isOnline()
+        return isOnline
     }
-
-    private fun isOnline(): Boolean {
-        val connMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connMgr.activeNetworkInfo
-//        Log.d(TAG, "isOnline - ${networkInfo != null && networkInfo.isConnected}")
-
-        return networkInfo != null && networkInfo.isConnected
-    }
-
 
     //LOCATION
-    private fun checkGpsStatus(): Boolean {
-        if (!isLocationEnabled()) {
-            val dialog = AlertDialog.Builder(this)
-            dialog.setTitle("Enable Location")
-                    .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to use this app")
-                    .setPositiveButton("Location Settings") { _, _ ->
-                        val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                        startActivity(myIntent)
-                    }
-                    .setNegativeButton("Cancel") { _, _ -> finish() }
-            dialog.show()
-        }
-
-
-        return isLocationEnabled()
-    }
-
     private fun isLocationEnabled(): Boolean {
         val isGpsEnabled = (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
         val isNetworkEnabled = (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.NETWORK_PROVIDER)
@@ -219,48 +212,15 @@ class StartActivity : AppCompatActivity() {
         return isGpsEnabled || isNetworkEnabled
     }
 
-    private fun locationUpdate() {
-//        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "Not permitted")
-
-                return
-            }
-
-            Log.d(TAG, "request location")
-
-            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
-            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null)
-
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in locationUpdate\n${e.message}")
-        }
-    }
-
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            Log.d(TAG, "onLocationChanged()")
-
-            val intent = Intent(this@StartActivity, MainActivity::class.java)
-            intent.putExtra("LOCATION", location)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-
-            locationManager.removeUpdates(this)
-
-            eventHandler.removeCallbacksAndMessages(null)
-            ContextCompat.startActivity(this@StartActivity, intent, null)
+            userLocation = location
+            locationManager?.removeUpdates(this)
         }
 
-        override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {}
-        override fun onProviderEnabled(p0: String?) {}
-        override fun onProviderDisabled(p0: String?) {}
-
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+        override fun onProviderEnabled(provider: String) {}
+        override fun onProviderDisabled(provider: String) {}
     }
 
 }

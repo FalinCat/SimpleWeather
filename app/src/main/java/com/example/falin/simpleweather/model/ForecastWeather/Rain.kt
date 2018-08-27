@@ -1,4 +1,4 @@
-package com.example.falin.simpleweather.Model.ForecastWeather
+package com.example.falin.simpleweather.model.ForecastWeather
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

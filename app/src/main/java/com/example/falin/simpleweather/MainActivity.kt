@@ -12,18 +12,15 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.widget.LinearLayout
 import android.widget.Toast
-import com.example.falin.simpleweather.Adapters.ForecastAdapterWithImage
-import com.example.falin.simpleweather.Model.CurrentWeather.CurrentWeatherData
-import com.example.falin.simpleweather.Model.ForecastWeather.ForecastWeatherData
+import com.example.falin.simpleweather.adapters.ForecastAdapter
+import com.example.falin.simpleweather.model.CurrentWeather.CurrentWeatherData
+import com.example.falin.simpleweather.model.ForecastWeather.ForecastWeatherData
 import com.example.igorvanteev.retrofit2test.QueryRepositoryProvider
-import com.squareup.picasso.Picasso
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -35,6 +32,10 @@ class MainActivity : AppCompatActivity() {
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
     private var APP_PREFERENCE = "appPrefs"
     private lateinit var prefs: SharedPreferences
+    private lateinit var fcw: ForecastWeatherData
+    private lateinit var cwd: CurrentWeatherData
+    private var isCUrWeatherReady: Boolean = false
+    private var isForecastReady: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,83 +46,6 @@ class MainActivity : AppCompatActivity() {
         forecastRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
         location = intent.getParcelableExtra("LOCATION")
 
-
-        locationText.setOnClickListener {
-            prefs.edit().clear().apply()
-            Toast.makeText(this, "Reseting your saved location...", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-
-    private fun addSubscription() {
-        compositeDisposable.add(
-                repo.queryCurrentWeather(location.latitude, location.longitude)
-                        .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(1, TimeUnit.HOURS) }
-                        }
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { result ->
-                                    Log.d(TAG, result.toString())
-                                    updateUI(result)
-                                },
-                                { error -> Log.e(TAG, error.message) }
-                        )
-        )
-
-
-        compositeDisposable.add(
-                repo.queryForecastWeather(location.latitude, location.longitude)
-
-                        .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(6, TimeUnit.HOURS) }
-                        }
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({ result ->
-                            updateUI(result)
-                        }, { error ->
-                            Log.e(TAG, "Error in forecast - ${error.message}")
-                        })
-        )
-    }
-
-    private fun updateUI(cWeather: CurrentWeatherData) {
-        val hum = "Humidity -  ${cWeather.main.humidity} %"
-        val wind = "Wind Speed -  ${cWeather.wind.speed} m/s"
-        val minMax = """Min ${String.format("%.1f", cWeather.main.temp_min).replace(",", ".")} °C - Max ${String.format("%.1f", cWeather.main.temp_max).replace(",", ".")} °C"""
-        currentTemperatureTxt.text = String.format("%.1f", cWeather.main.temp).replace(",", ".").plus(" °C")
-        locationText.text = cWeather.name
-
-        currentHumidity.text = hum
-        currentWindSpeed.text = wind
-        minMaxTemp.text = minMax
-
-        val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        val lastUpdt = "Last update: ${format.format(Date())}"
-        lastUpdate.text = lastUpdt
-
-        Picasso.get().load(makeUrl(cWeather.weather[0].icon)).into(currentWeatherImage)
-
-        Log.d(TAG, "UI updating...")
-    }
-
-    private fun makeUrl(icon: String): String {
-        return "http://openweathermap.org/img/w/$icon.png"
-    }
-
-    private fun updateUI(fWeather: ForecastWeatherData) {
-        try {
-            if (forecastRecyclerView.adapter != null) {
-                val adapter = ForecastAdapterWithImage(fWeather)
-                adapter.updateData(fWeather)
-            } else {
-                forecastRecyclerView.adapter = ForecastAdapterWithImage(fWeather)
-            }
-        } catch (e: Exception) {
-            Log.i(TAG, e.message)
-        }
 
     }
 
@@ -140,6 +64,64 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.dispose()
     }
 
+
+    private fun addSubscription() {
+        Log.d(LOG_TAG, "Добавляем подписки")
+        compositeDisposable.addAll(
+                repo.queryCurrentWeather(location.latitude, location.longitude)
+                        .repeatWhen { repeatHandler ->
+                            repeatHandler.flatMap { Observable.timer(1, TimeUnit.HOURS) }
+                        }
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { result ->
+                                    cwd = result
+                                    isCUrWeatherReady = true
+                                    updateUI("current")
+                                },
+                                { error -> Log.e(TAG, error.message) }
+                        ),
+
+                repo.queryForecastWeather(location.latitude, location.longitude)
+                        .repeatWhen { repeatHandler ->
+                            repeatHandler.flatMap { Observable.timer(6, TimeUnit.HOURS) }
+                        }
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe({ result ->
+                            fcw = result
+                            isForecastReady = true
+                            updateUI("forecast")
+                        }, { error ->
+                            Log.e(TAG, "Error in forecast - ${error.message}")
+                        })
+        )
+    }
+
+    private fun updateUI(from: String) {
+        Log.d(LOG_TAG, "Попытка обновление интерфейса из $from")
+        if (isCUrWeatherReady && isForecastReady) {
+            Log.d(LOG_TAG, "Обновление интерфейса")
+            try {
+                if (forecastRecyclerView.adapter != null) {
+                    val adapter = ForecastAdapter(this, cwd, fcw)
+                    adapter.updateData(cwd, fcw)
+                } else {
+                    forecastRecyclerView.adapter = ForecastAdapter(this, cwd, fcw)
+                }
+
+                isCUrWeatherReady = false
+                isForecastReady = false
+
+            } catch (e: Exception) {
+
+            }
+        }
+
+
+
+    }
 
     override fun onBackPressed() {
         if (exit!!) {
