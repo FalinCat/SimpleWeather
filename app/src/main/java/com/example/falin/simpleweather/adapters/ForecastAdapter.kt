@@ -71,6 +71,7 @@ class ForecastAdapter(val context: Context, var cWeather: CurrentWeatherData, va
             val pressure = "${String.format("%.1f", fWeather.list!![position].main?.pressure!! / 10).replace(",", ".")} кПа"
 
             val imageUrl = "http://openweathermap.org/img/w/${fWeather.list!![position].weather!![0].icon}.png"
+
             Picasso.get().load(imageUrl).into(holder.weatherImage)
 
             holder.dayOfWeek.text = sdf.format(netDate)
@@ -83,11 +84,13 @@ class ForecastAdapter(val context: Context, var cWeather: CurrentWeatherData, va
             val wind = "${cWeather.wind.speed} м/с"
             val pressure = "${cWeather.main.pressure / 10} кПа"
 
+
             holder.temperatureCurrent.text = String.format("%.1f", cWeather.main.temp).replace(",", ".").plus(" °C")
             holder.humidity.text = hum
             holder.windSpeed.text = wind
             holder.pressureCurrent.text = pressure
             holder.weatherDescription.text = cWeather.weather[0].description.capitalize()
+            val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
             Picasso.get().load(imageUrl).into(holder.currentWeatherImage)
         }
