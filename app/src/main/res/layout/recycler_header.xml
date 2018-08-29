@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="170dp"
+    android:layout_height="140dp"
     android:background="@color/colorPrimary">
 
     <ImageView
@@ -12,10 +12,11 @@
         android:layout_height="100dp"
         android:layout_marginLeft="50dp"
         android:layout_marginStart="50dp"
+        android:layout_marginTop="8dp"
         android:contentDescription="Wether Image"
         android:cropToPadding="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/LocationValue" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/WeatherDescriptionValue"
@@ -35,126 +36,106 @@
         android:id="@+id/TemperatureValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
         android:textColor="@color/colorText"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/PressureValue"
         tools:text="123 C" />
 
     <TextView
         android:id="@+id/TemperatureText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:text="Температура: "
         android:textColor="@color/colorText"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/TemperatureValue"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/WeatherDescriptionValue"
-        app:layout_constraintTop_toTopOf="@+id/TemperatureValue"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/LocationValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:textColor="@color/colorText"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="@+id/WeatherImage"
-        app:layout_constraintStart_toStartOf="@+id/WeatherImage"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Местоположение" />
+        app:layout_constraintEnd_toEndOf="@+id/barrier3"
+        app:layout_constraintTop_toTopOf="@+id/TemperatureValue" />
 
     <TextView
         android:id="@+id/PressureValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
         android:textColor="@color/colorText"
-        app:layout_constraintBottom_toTopOf="@+id/TemperatureValue"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/HumidityValue"
         tools:text="123 %" />
 
     <TextView
         android:id="@+id/PressureText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:text="Давление: "
         android:textColor="@color/colorText"
-        app:layout_constraintEnd_toStartOf="@+id/PressureValue"
+        app:layout_constraintEnd_toEndOf="@+id/barrier3"
         app:layout_constraintTop_toTopOf="@+id/PressureValue" />
 
     <TextView
         android:id="@+id/HumidityValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
         android:textColor="@color/colorText"
-        app:layout_constraintBottom_toTopOf="@+id/PressureValue"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/WindSpeedValue"
         tools:text="123 %" />
 
     <TextView
         android:id="@+id/HumidityText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:text="Влажность:"
         android:textColor="@color/colorText"
-        app:layout_constraintEnd_toStartOf="@+id/HumidityValue"
+        app:layout_constraintEnd_toEndOf="@+id/barrier3"
         app:layout_constraintTop_toTopOf="@+id/HumidityValue" />
 
     <TextView
         android:id="@+id/WindSpeedValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginTop="16dp"
         android:textColor="@color/colorText"
-        app:layout_constraintBottom_toTopOf="@+id/HumidityValue"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="123 m/s" />
 
     <TextView
         android:id="@+id/WindSpeedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:text="Скорость ветра:"
         android:textColor="@color/colorText"
-        app:layout_constraintEnd_toStartOf="@+id/WindSpeedValue"
+        app:layout_constraintEnd_toEndOf="@+id/barrier3"
         app:layout_constraintTop_toTopOf="@+id/WindSpeedValue" />
 
-    <TextView
-        android:id="@+id/LastUpdateValue"
+    <android.support.constraint.Barrier
+        android:id="@+id/barrier3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="58dp"
-        android:layout_marginRight="58dp"
-        android:layout_marginTop="8dp"
-        android:textColor="@color/colorText"
-        android:textSize="10sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="last update" />
+        android:layout_marginBottom="149dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
+        app:barrierDirection="left"
+        app:constraint_referenced_ids="PressureValue,HumidityValue,WindSpeedValue,TemperatureValue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/WindSpeedValue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

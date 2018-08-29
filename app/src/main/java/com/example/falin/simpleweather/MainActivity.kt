@@ -7,11 +7,12 @@ import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.NavigationView
-import android.support.v4.widget.DrawerLayout
+import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.example.falin.simpleweather.adapters.ForecastAdapter
@@ -38,29 +39,41 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cwd: CurrentWeatherData
     private var isCUrWeatherReady: Boolean = false
     private var isForecastReady: Boolean = false
-    private lateinit var mDrawerLayout: DrawerLayout
+    private lateinit var actionBar: ActionBar
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_root_layout)
+        setContentView(R.layout.activity_main)
+        setSupportActionBar(toolbar)
+
+        actionBar = supportActionBar!!
+        actionBar.title = ""
+        actionBar.subtitle = ""
+        actionBar.elevation = 0.1F
+
 
         prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
         forecastRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
         location = intent.getParcelableExtra("LOCATION")
 
-        mDrawerLayout = findViewById(R.id.drawer_layout)
-        val navigationView: NavigationView = findViewById(R.id.nav_view)
+    }
 
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            // set item as selected to persist highlight
-            menuItem.isChecked = true
-            // close drawer when item is tapped
-            mDrawerLayout.closeDrawers()
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.toolbar_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
 
-            TODO("Нет времени на доработку :(")
-            true
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_go_to_settings -> {
+                Log.d(LOG_TAG, "Переход к настройкам в будущем")
+
+                return true
+            }
         }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {
@@ -118,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         if (isCUrWeatherReady && isForecastReady) {
             Log.d(LOG_TAG, "Обновление интерфейса")
             try {
+                actionBar.title = cwd.name
                 if (forecastRecyclerView.adapter != null) {
                     val adapter = ForecastAdapter(this, cwd, fcw)
                     adapter.updateData(cwd, fcw)

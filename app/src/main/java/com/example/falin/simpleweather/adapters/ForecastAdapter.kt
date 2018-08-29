@@ -27,8 +27,6 @@ class ForecastAdapter(val context: Context, var cWeather: CurrentWeatherData, va
         class RecyclerViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
             var view_type = 0
             // Текущая погода
-            lateinit var location: TextView
-            lateinit var lastUpdate: TextView
             lateinit var windSpeed: TextView
             lateinit var humidity: TextView
             lateinit var pressureCurrent: TextView
@@ -51,8 +49,6 @@ class ForecastAdapter(val context: Context, var cWeather: CurrentWeatherData, va
                     weatherImage = itemView.weatherImageFC
                     view_type = 1
                 } else if (viewType == TYPE_HEAD) {
-                    location = itemView.LocationValue
-                    lastUpdate = itemView.LastUpdateValue
                     windSpeed = itemView.WindSpeedValue
                     humidity = itemView.HumidityValue
                     pressureCurrent = itemView.PressureValue
@@ -75,7 +71,6 @@ class ForecastAdapter(val context: Context, var cWeather: CurrentWeatherData, va
             val pressure = "${String.format("%.1f", fWeather.list!![position].main?.pressure!! / 10).replace(",", ".")} кПа"
 
             val imageUrl = "http://openweathermap.org/img/w/${fWeather.list!![position].weather!![0].icon}.png"
-
             Picasso.get().load(imageUrl).into(holder.weatherImage)
 
             holder.dayOfWeek.text = sdf.format(netDate)
@@ -88,15 +83,11 @@ class ForecastAdapter(val context: Context, var cWeather: CurrentWeatherData, va
             val wind = "${cWeather.wind.speed} м/с"
             val pressure = "${cWeather.main.pressure / 10} кПа"
 
-
             holder.temperatureCurrent.text = String.format("%.1f", cWeather.main.temp).replace(",", ".").plus(" °C")
-            holder.location.text = cWeather.name
             holder.humidity.text = hum
             holder.windSpeed.text = wind
             holder.pressureCurrent.text = pressure
             holder.weatherDescription.text = cWeather.weather[0].description.capitalize()
-            val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            holder.lastUpdate.text = "Обновлено: ${sdf.format(Date())}"
 
             Picasso.get().load(imageUrl).into(holder.currentWeatherImage)
         }
