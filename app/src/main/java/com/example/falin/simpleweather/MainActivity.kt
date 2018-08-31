@@ -1,20 +1,18 @@
-@file:Suppress("DEPRECATION")
-
 package com.example.falin.simpleweather
 
-import android.app.FragmentTransaction
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceManager
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.example.falin.simpleweather.adapters.ForecastAdapter
@@ -36,14 +34,14 @@ class MainActivity : AppCompatActivity() {
     private val repo = QueryRepositoryProvider.provideQueryRepository()
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
     private var APP_PREFERENCE = "appPrefs"
+    private lateinit var userPrefs: SharedPreferences
     private lateinit var prefs: SharedPreferences
     private lateinit var fcw: ForecastWeatherData
     private lateinit var cwd: CurrentWeatherData
     private var isCUrWeatherReady: Boolean = false
     private var isForecastReady: Boolean = false
     private lateinit var actionBar: ActionBar
-
-    var settingsFragment: SettingsFragment? = null
+    private var updateFrequency = 6L
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,12 +52,13 @@ class MainActivity : AppCompatActivity() {
         actionBar = supportActionBar!!
         actionBar.title = ""
         actionBar.subtitle = ""
-        actionBar.elevation = 0.1F
+        actionBar.elevation = 0.7F
 
-
-        prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
         forecastRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, false)
         location = intent.getParcelableExtra("LOCATION")
+
+        userPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
 
     }
 
@@ -72,47 +71,23 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_go_to_settings -> {
-                forecastRecyclerView.visibility = View.GONE
+/*                forecastRecyclerView.visibility = View.GONE
                 toolbar.visibility = View.GONE
-
-
                 inflateSettingsFragment()
-
+*/
+                val settingsIntent = Intent(this, SettingsActivity::class.java)
+                startActivity(settingsIntent)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    fun inflateSettingsFragment() {
-        Log.d(LOG_TAG, "Inflating Settings Fragment")
-        if (settingsFragment == null) {
-            settingsFragment = SettingsFragment()
-            Log.d(LOG_TAG, "Settings fragment is null")
-        }
-
-        val transaction: FragmentTransaction = fragmentManager.beginTransaction()
-        transaction.replace(R.id.settings_container, settingsFragment, FRAGMENT_SETTINGS)
-        transaction.addToBackStack(FRAGMENT_SETTINGS)
-        transaction.commit()
-    }
-
-//    fun correctSettingsToolbarVisibilty() {
-//        if (settingsFragment != null) {
-//            if (settingsFragment!!.isVisible) {
-//                showSettingsAppBar()
-//            } else {
-//                hideSettingsAppBar()
-//            }
-//            return
-//        }
-//        hideSettingsAppBar()
-//    }
-
     override fun onResume() {
         super.onResume()
-        toolbar.visibility = View.VISIBLE
-        forecastRecyclerView.visibility = View.VISIBLE
+
+        updateFrequency = userPrefs.getString("updateFrequency", "6").toLong()
+
         addSubscription()
     }
 
@@ -131,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.addAll(
                 repo.queryCurrentWeather(location.latitude, location.longitude)
                         .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(1, TimeUnit.HOURS) }
+                            repeatHandler.flatMap { Observable.timer(updateFrequency, TimeUnit.HOURS) }
                         }
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -146,7 +121,7 @@ class MainActivity : AppCompatActivity() {
 
                 repo.queryForecastWeather(location.latitude, location.longitude)
                         .repeatWhen { repeatHandler ->
-                            repeatHandler.flatMap { Observable.timer(6, TimeUnit.HOURS) }
+                            repeatHandler.flatMap { Observable.timer(updateFrequency, TimeUnit.HOURS) }
                         }
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fragment="com.example.falin.simpleweather.SettingsFragment">
+    android:fragment="com.example.falin.simpleweather.SettingsActivity$GeneralPreferenceFragment">
     <PreferenceCategory android:title="Основное">
 
         <ListPreference
             android:defaultValue="1"
             android:dialogTitle="Частота обновления"
+            android:entries="@array/pref_weather_update_frequency_entries"
+            android:entryValues="@array/pref_weather_update_frequency_values"
             android:key="updateFrequency"
             android:summary="Как часто происходит обновление погоды"
-            android:title="Частота обновления"
-            android:entries="@array/pref_weather_update_frequency_entries"
-            android:entryValues="@array/pref_weather_update_frequency_values"/>
+            android:title="Частота обновления" />
 
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Местопложение">
-
-        <Preference
-            android:key="LOCATION_1"
-            android:selectable="true"
-            android:title="Сменить текущее местоположение" />
-
         <SwitchPreference
             android:defaultValue="true"
             android:key="useSavedLocation"
             android:summary="Запоминать местоположение"
             android:title="Сохранять координаты" />
+
+        <Preference
+            android:key="LOCATION_1"
+            android:selectable="true"
+            android:title="Сменить текущее местоположение"
+            android:dependency="useSavedLocation">
+            <intent android:action=".Maps" />
+        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

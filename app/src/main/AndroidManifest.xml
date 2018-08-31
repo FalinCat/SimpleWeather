@@ -46,10 +46,12 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name=".Maps" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name=".DetailForecastActivity" />
+        <activity android:name=".SettingsActivity" />
     </application>
 
 </manifest>

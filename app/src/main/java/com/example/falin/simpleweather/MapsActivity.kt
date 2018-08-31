@@ -7,6 +7,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceManager
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -26,6 +27,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var exit: Boolean? = false
     private var APP_PREFERENCE = "appPrefs"
     private lateinit var prefs: SharedPreferences
+    private lateinit var userPrefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +37,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        val isFromStart = intent.getBooleanExtra("fromStartActivity", false)
+
         prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
+        userPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+        if (!isFromStart) {
+            prefs.edit()
+                    .clear()
+                    .apply()
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -70,11 +80,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 markerLocation.latitude = it.position.latitude
                 markerLocation.longitude = it.position.longitude
 
-                prefs.edit()
-                        .putString("LOCATION", "${it.position.latitude} ${it.position.longitude}")
-                        .apply()
+                if (userPrefs.getBoolean("useSavedLocation", true)) {
+                    prefs.edit()
+                            .putString("LOCATION", "${it.position.latitude} ${it.position.longitude}")
+                            .apply()
 
-                Log.d(TAG, "Save location ${it.position.latitude} ${it.position.longitude}")
+                    Log.d(TAG, "Save location ${it.position.latitude} ${it.position.longitude}")
+                }
 
                 val intent = Intent(this@MapsActivity, MainActivity::class.java)
                 intent.putExtra("LOCATION", markerLocation)

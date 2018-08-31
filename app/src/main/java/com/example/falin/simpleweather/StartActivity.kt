@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceManager
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AlertDialog
@@ -28,19 +29,21 @@ class StartActivity : AppCompatActivity() {
     private val TAG = "APPTAG"
     private var APP_PREFERENCE = "appPrefs"
     private lateinit var prefs: SharedPreferences
+    private lateinit var userPrefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
 
         prefs = getSharedPreferences(APP_PREFERENCE, Context.MODE_PRIVATE)
+        userPrefs = PreferenceManager.getDefaultSharedPreferences(this)
 
     }
 
     override fun onStart() {
         super.onStart()
 
-        if (prefs.getString("LOCATION", "") != "") {
+        if (prefs.getString("LOCATION", "") != "" && userPrefs.getBoolean("useSavedLocation", true)) {
             val stringLocations = prefs.getString("LOCATION", "").split(" ")
             Log.i(TAG, "Найдены сохраненные координаты ${stringLocations[0]} & ${stringLocations[1]}")
             userLocation = Location("")
@@ -129,6 +132,7 @@ class StartActivity : AppCompatActivity() {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        intent.putExtra("fromStartActivity", true)
         startActivity(intent)
     }
 
@@ -136,7 +140,7 @@ class StartActivity : AppCompatActivity() {
         Log.d(LOG_TAG, "Координаты для поиска погоды ${userLocation?.latitude} && ${userLocation?.longitude}")
 
         //Записываем местоположение в настройки
-        if (prefs.getString("LOCATION", "") == "") {
+        if (prefs.getString("LOCATION", "") == "" && userPrefs.getBoolean("useSavedLocation", true)) {
             prefs.edit()
                     .putString("LOCATION", "${userLocation?.latitude} ${userLocation?.longitude}")
                     .apply()
