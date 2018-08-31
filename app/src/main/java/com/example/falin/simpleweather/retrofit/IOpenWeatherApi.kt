@@ -9,7 +9,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 
-interface OpenWeatherApi {
+interface IOpenWeatherApi {
     @GET("data/2.5/weather")
     fun queryCurrentWeather(@Query("lat") lat: Double,
                             @Query("lon") lon: Double,
@@ -27,14 +27,14 @@ interface OpenWeatherApi {
     ): io.reactivex.Observable<ForecastWeatherData>
 
     companion object Factory {
-        fun create(): OpenWeatherApi {
+        fun create(): IOpenWeatherApi {
             val retrofit = Retrofit.Builder()
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create())
                     .baseUrl("http://api.openweathermap.org")
                     .build()
 
-            return retrofit.create(OpenWeatherApi::class.java)
+            return retrofit.create(IOpenWeatherApi::class.java)
         }
     }
 }

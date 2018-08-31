@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 
 const val LOG_TAG = "APPTAG"
+const val FRAGMENT_SETTINGS = "Settings Fragment"
 
 class StartActivity : AppCompatActivity() {
     private var locationManager: LocationManager? = null

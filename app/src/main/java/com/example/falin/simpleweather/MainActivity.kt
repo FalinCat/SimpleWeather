@@ -2,6 +2,7 @@
 
 package com.example.falin.simpleweather
 
+import android.app.FragmentTransaction
 import android.content.Context
 import android.content.SharedPreferences
 import android.location.Location
@@ -13,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.example.falin.simpleweather.adapters.ForecastAdapter
@@ -41,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     private var isForecastReady: Boolean = false
     private lateinit var actionBar: ActionBar
 
+    var settingsFragment: SettingsFragment? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,18 +70,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.action_go_to_settings -> {
-                Log.d(LOG_TAG, "Переход к настройкам в будущем")
+                forecastRecyclerView.visibility = View.GONE
+                toolbar.visibility = View.GONE
 
-                return true
+
+                inflateSettingsFragment()
+
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
+
+    fun inflateSettingsFragment() {
+        Log.d(LOG_TAG, "Inflating Settings Fragment")
+        if (settingsFragment == null) {
+            settingsFragment = SettingsFragment()
+            Log.d(LOG_TAG, "Settings fragment is null")
+        }
+
+        val transaction: FragmentTransaction = fragmentManager.beginTransaction()
+        transaction.replace(R.id.settings_container, settingsFragment, FRAGMENT_SETTINGS)
+        transaction.addToBackStack(FRAGMENT_SETTINGS)
+        transaction.commit()
+    }
+
+//    fun correctSettingsToolbarVisibilty() {
+//        if (settingsFragment != null) {
+//            if (settingsFragment!!.isVisible) {
+//                showSettingsAppBar()
+//            } else {
+//                hideSettingsAppBar()
+//            }
+//            return
+//        }
+//        hideSettingsAppBar()
+//    }
 
     override fun onResume() {
         super.onResume()
+        toolbar.visibility = View.VISIBLE
+        forecastRecyclerView.visibility = View.VISIBLE
         addSubscription()
     }
 
@@ -90,7 +125,6 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         compositeDisposable.dispose()
     }
-
 
     private fun addSubscription() {
         Log.d(LOG_TAG, "Добавляем подписки")
@@ -159,7 +193,6 @@ class MainActivity : AppCompatActivity() {
             exit = true
             Handler().postDelayed({ exit = false }, 3 * 1000)
         }
-
     }
 
 
